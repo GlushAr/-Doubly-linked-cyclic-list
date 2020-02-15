@@ -6,7 +6,7 @@ template<typename T> class CyList {
         typedef struct Node {
             struct Node* prev;
             struct Node* next;
-            T letter;
+            T info;
         } List;
 
         List* head;
@@ -15,15 +15,7 @@ template<typename T> class CyList {
             count++;
             List* list = (List*)malloc(sizeof(List));
             List* tmp = list;
-            list->letter = data;
-            list->prev = tmp;
-            list->next = tmp; 
-        return list;
-        }
-
-        List* Init() {
-            List* list = (List*)malloc(sizeof(List));
-            List* tmp = list;
+            list->info = data;
             list->prev = tmp;
             list->next = tmp; 
         return list;
@@ -32,20 +24,17 @@ template<typename T> class CyList {
     public:
 
         void add(T data) {
-            if (count == 0) {
-                count++;
-                head->letter = data;
-            } else {
-                List* start = head;
+            if(count != 0) {
                 count++;
                 List* list = (List*)malloc(sizeof(List));
-                list->letter = data;
-                for(int i = 1; i < (count - 1); i++, start = start->next);
-                List* tmp = start->next;
-                list->prev = start;
-                list->next = tmp;
-                start->next = list;
-                tmp->prev = list;
+                list->info = data;
+                list->prev = head->prev;
+                list->next = head;
+                head->prev->next = list;
+                head->prev = list;
+
+            } else {
+                head = Init(data);
             }
         }
 
@@ -56,9 +45,32 @@ template<typename T> class CyList {
         void print_all_info() {
             List* tmp = head;
             for(int i = 1; i <= count; i++) {
-                std::cout << "iteration: " <<  i << " value: " << tmp->letter << std::endl;
+                std::cout << "iteration: " <<  i << " value: " << tmp->info << std::endl;
                 tmp = tmp->next;
             }
+        }
+
+        void delete_node(List* node) {
+            if(node == head)
+                head = head->next;
+            if(head == NULL)
+                return;
+            node->next->prev = node->prev;
+            node->prev->next = node->next;
+            free(node); 
+            count--;
+        }
+
+        T operator [] (int i) {
+            List* tmp = head;
+            for (int k = 1; k < i; k++) tmp = tmp->next;
+            return tmp->info;
+        }
+
+        List* get_ptr(int i) {
+            List* tmp = head;
+            for (int k = 1; k < i; k++) tmp = tmp->next;
+            return tmp;
         }
 
         CyList(T data) {
@@ -66,15 +78,19 @@ template<typename T> class CyList {
         }
 
         CyList() {
-            head = Init();
+
         }
 
         ~CyList() {
-            head->prev->next = NULL;
-            while(head != NULL) {
-                List* tmp = head;
-                head = head->next;
-                free(tmp);
+            if (count <= 1)
+                free(head);
+            else {
+                head->prev->next = NULL;
+                while(head != NULL) {
+                    List* tmp = head;
+                    head = head->next;
+                    free(tmp);
+                }
             }
         }
 };
